@@ -12,7 +12,6 @@ import { randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { hashRefreshToken } from './token-hash.util.js';
-import { JWT_REFRESH_SECRET_FALLBACK } from './constants.js';
 import { LoginDto } from './dto/login.dto.js';
 
 // 返回给前端的用户字段，不含密码、refreshToken 等敏感信息
@@ -89,9 +88,7 @@ export class AuthService {
       this.jwtService.signAsync(
         { ...payload, refreshId },
         {
-          secret:
-            this.configService.get<string>('JWT_REFRESH_SECRET') ??
-            JWT_REFRESH_SECRET_FALLBACK,
+          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
           expiresIn: '7d',
         },
       ),

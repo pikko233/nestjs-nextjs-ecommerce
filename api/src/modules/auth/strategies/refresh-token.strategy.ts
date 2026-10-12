@@ -6,7 +6,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request } from 'express';
 import type { JwtPayload } from './jwt.strategy.js';
 import { hashRefreshToken } from '../token-hash.util.js';
-import { JWT_REFRESH_SECRET_FALLBACK } from '../constants.js';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -20,9 +19,8 @@ export class RefreshTokenStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        configService.get<string>('JWT_REFRESH_SECRET') ??
-        JWT_REFRESH_SECRET_FALLBACK,
+      // 缺少 JWT_REFRESH_SECRET 时直接抛错，让服务启动失败，避免使用可预测的密钥
+      secretOrKey: configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       passReqToCallback: true,
     });
   }

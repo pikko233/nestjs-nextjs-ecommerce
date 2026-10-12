@@ -15,8 +15,8 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy.js';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret:
-          configService.get<string>('JWT_SECRET') ?? 'default-secret-20260921',
+        // 缺少 JWT_SECRET 时直接抛错，让服务启动失败，避免使用可预测的密钥
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn:
             configService.get<NonNullable<JwtSignOptions['expiresIn']>>(

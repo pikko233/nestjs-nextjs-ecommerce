@@ -29,7 +29,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/ecommerce"
 
 JWT_SECRET="替换为随机字符串"
 JWT_EXPIRES_IN="15m"
-# 必须与 JWT_SECRET 不同
+# 必须与 JWT_SECRET 不同；JWT_SECRET 和 JWT_REFRESH_SECRET 缺失时服务会启动失败
 JWT_REFRESH_SECRET="替换为另一个随机字符串"
 
 STRIPE_SECRET_KEY="sk_test_..."
