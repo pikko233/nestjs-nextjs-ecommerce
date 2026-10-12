@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 用户角色权限
+enum Role {
+  USER
+  ADMIN
+}
+
+// 订单状态
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// 支付状态
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// 用户
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  password String
+  firstName String?
+  lastName String?
+  role Role @default(USER)
+  refreshToken String?
+
+  // 关系字段
+  orders Order[]
+  carts Cart[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users") // 表名
+}
+
+// 商品
+model Product {
+  id String @id @default(uuid())
+  name String
+  description String?
+  price Decimal @db.Decimal(10,2)
+  stock Int @default(0)
+  sku String @unique
+  imageUrl String?
+  isActive Boolean @default(true)
+
+  orderItems OrderItem[]
+  cartItems CartItem[]
+
+  categoryId String
+  category Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
+}
+
+// 商品分类
+model Category {
+  id String @id @default(uuid())
+  name String
+  description String?
+  slug String @unique
+  imageUrl String?
+  isActive Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("categories")
+}
+
+// 订单项 一个订单可以有多个订单项
+model OrderItem {
+  id String @id @default(uuid())
+  quantity Int // 订单项的商品数量
+  price Decimal @db.Decimal(10,2)
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+
+  orderId String
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// 订单
+model Order {
+  id String @id @default(uuid())
+  orderNumber String @unique @default(cuid())
+  status OrderStatus @default(PENDING)
+  totalAmount Decimal @db.Decimal(10,2)
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cartId String?
+  cart Cart? @relation(fields: [cartId], references: [id])
+
+  shippingAddress String
+
+  orderItems OrderItem[]
+
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+// 购物车项
+model CartItem {
+  id String @id @default(uuid())
+  quantity Int @default(1)
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+
+  cartId String
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+// 购物车
+model Cart {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+  checkedOut Boolean @default(false)
+  cartItems CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("carts")
+}
+
+// 付款记录
+model Payment {
+  id String @id @default(uuid())
+  amount Decimal @db.Decimal(10,2)
+  status PaymentStatus @default(PENDING)
+  currency String @default("usd")
+  paymentMethod String?
+  transactionId String? // 交易凭证ID
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderId String @unique
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([transactionId])
+  @@map("payments")
+}
