@@ -1,114 +1,113 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+电商项目的后端服务，基于 NestJS 12、Prisma 7（PostgreSQL）和 Stripe。
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 技术栈
 
-## Description
+- **框架**：NestJS 12（ESM）、TypeScript
+- **数据库**：PostgreSQL + Prisma 7（`@prisma/adapter-pg`）
+- **认证**：Passport JWT（access token 15 分钟，refresh token 7 天，refresh token 以哈希形式存库）
+- **支付**：Stripe PaymentIntent
+- **其他**：class-validator 参数校验、`@nestjs/throttler` 限流、Swagger 文档
+- **工具链**：Vitest、oxlint、Prettier
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 环境要求
 
-## Project setup
+- Node.js 24+
+- PostgreSQL
+
+## 本地启动
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+在 `api/` 下创建 `.env`：
+
+```dotenv
+DATABASE_URL="postgresql://user:password@localhost:5432/ecommerce"
+
+JWT_SECRET="替换为随机字符串"
+JWT_EXPIRES_IN="15m"
+# 必须与 JWT_SECRET 不同
+JWT_REFRESH_SECRET="替换为另一个随机字符串"
+
+STRIPE_SECRET_KEY="sk_test_..."
+
+# 可选
+PORT=3000
+ALLOWED_ORIGINS="http://localhost:3000"
+```
+
+执行数据库迁移并生成 Prisma Client：
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npx prisma migrate dev
 ```
 
-## Run tests
+启动开发服务器：
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run dev
 ```
 
-## Deployment
+- 接口前缀：`http://localhost:3000/api/v1`
+- Swagger 文档：`http://localhost:3000/api/docs`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 常用脚本
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| 命令 | 说明 |
+|---|---|
+| `npm run dev` | 开发模式（watch） |
+| `npm run build` / `npm run start:prod` | 构建 / 运行生产包 |
+| `npm test` | 单元测试 |
+| `npm run test:e2e` | e2e 测试（需要可用的数据库） |
+| `npm run test:cov` | 测试覆盖率 |
+| `npm run lint` | oxlint 检查 |
+| `npm run format` | Prettier 格式化 |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## 接口一览
+
+🔒 需要登录，👑 需要管理员权限。
+
+| 模块 | 方法 & 路径 | 说明 |
+|---|---|---|
+| auth | `POST /auth/register` | 注册 |
+| | `POST /auth/login` | 登录 |
+| | `POST /auth/refresh` | 用 refresh token 换新 token |
+| | `POST /auth/logout` 🔒 | 登出 |
+| users | `GET /users/me` 🔒 | 当前用户信息 |
+| | `PATCH /users/me` 🔒 | 修改个人信息 |
+| | `PATCH /users/me/password` 🔒 | 修改密码 |
+| | `DELETE /users/me` 🔒 | 注销账号 |
+| | `GET /users`、`GET /users/:id`、`DELETE /users/:id` 👑 | 用户管理 |
+| category | `GET /category`、`GET /category/:id`、`GET /category/slug/:slug` | 查询分类 |
+| | `POST`、`PATCH /:id`、`DELETE /:id` 👑 | 分类管理 |
+| product | `GET /product`、`GET /product/:id` | 查询商品 |
+| | `POST`、`PATCH /:id`、`PATCH /:id/stock`、`DELETE /:id` 👑 | 商品与库存管理 |
+| cart | `GET /cart` 🔒 | 获取购物车 |
+| | `POST /cart/items` 🔒 | 加入购物车 |
+| | `PATCH /cart/items/:id`、`DELETE /cart/items/:id` 🔒 | 修改数量 / 移除商品 |
+| order | `POST /order` 🔒 | 创建订单 |
+| | `GET /order`、`GET /order/:id` 🔒 | 我的订单 |
+| | `PATCH /order/:id` 🔒 | 修改收货地址（仅待处理订单） |
+| | `DELETE /order/:id` 🔒 | 取消订单 |
+| | `GET /order/admin/all`、`GET`/`PATCH`/`DELETE /order/admin/:id` 👑 | 订单管理 |
+| payment | `POST /payment/create-intent` 🔒 | 创建 Stripe PaymentIntent |
+| | `POST /payment/confirm` 🔒 | 确认支付 |
+| | `GET /payment`、`GET /payment/:id`、`GET /payment/order/:orderId` 🔒 | 支付记录 |
+
+完整的请求和响应结构见 Swagger 文档。
+
+## 目录结构
+
 ```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+api/
+├── prisma/            # schema 与迁移
+├── src/
+│   ├── common/        # 通用装饰器、守卫、响应 DTO
+│   ├── prisma/        # PrismaService
+│   ├── modules/       # auth / user / category / product / cart / order / payment
+│   └── main.ts
+└── test/              # e2e 测试
+```
