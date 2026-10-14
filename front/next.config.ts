@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
+  },
 };
 
 export default nextConfig;

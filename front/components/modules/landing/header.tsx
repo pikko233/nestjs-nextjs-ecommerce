@@ -2,39 +2,89 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, ShoppingCart } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+import { authService } from "@/service/api/auth.service";
+import { LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export const Header = () => {
-  const [cartItems, setCartItems] = useState(9);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { items, totalItems } = useCart();
+  const { isLoading, setIsLoading, error, user, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleDashboardClick = () => {
+    if (user?.role === "ADMIN") {
+      router.push("/admin");
+    } else {
+      router.push("/user");
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleLogin = async () => {
+    router.push("/auth/login");
+  };
 
   return (
     <>
-      <header className="sticky top-0 w-screen h-16 border-b border-border px-6 z-50 bg-transparent/90 backdrop-blur-md">
+      <header className="sticky top-0 w-screen h-16 shadow-sm px-6 z-50 bg-white/70 backdrop-blur-md">
         <div className="w-full h-full flex items-center justify-between">
           <Link href="/" className="text-2xl font-black">
             STOREFRONT
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/cart">
-              <Button variant="secondary" size="icon" className="relative">
+            <Button
+              asChild
+              variant="secondary"
+              size="icon"
+              className="relative"
+            >
+              <Link
+                href="/cart"
+                aria-label={
+                  totalItems > 0 ? `购物车，${totalItems} 件商品` : "购物车"
+                }
+              >
                 <ShoppingCart className="size-4" />
-                <Badge className="absolute top-0 left-full -translate-x-[50%] -translate-y-[50%]">
-                  {cartItems}
-                </Badge>
-              </Button>
-            </Link>
+                {totalItems > 0 && (
+                  <Badge className="absolute top-0 left-full -translate-x-[50%] -translate-y-[50%]">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Link>
+            </Button>
             {isAuthenticated ? (
               <>
-                <Button variant="secondary" size="icon">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  aria-label={user?.role === "ADMIN" ? "管理后台" : "个人中心"}
+                  onClick={handleDashboardClick}
+                >
                   <LayoutDashboard className="size-4" />
                 </Button>
-                <Button>退出登录</Button>
+                <Button onClick={handleLogout}>
+                  <LogOut className="size-4" />
+                  退出登录
+                </Button>
               </>
             ) : (
-              <Button>登录</Button>
+              <Button onClick={handleLogin}>
+                <LogIn className="size-4" />
+                登录
+              </Button>
             )}
           </div>
         </div>
