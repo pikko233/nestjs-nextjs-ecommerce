@@ -6,6 +6,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useProduct } from "@/hooks/use-product";
 import { useEffect, useState } from "react";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
+import Link from "next/link";
 
 const GRID_CLASS = "grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
 
@@ -61,7 +62,9 @@ export const ProductList = () => {
       ) : (
         <div className={GRID_CLASS}>
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <Link key={product.id} href={product.id}>
+              <ProductCard product={product} />
+            </Link>
           ))}
         </div>
       )}

@@ -215,6 +215,7 @@ export class ProductService {
       ...product,
       price: product.price.toNumber(),
       category: product.category.name,
+      categoryId: product.categoryId,
     };
   }
 }

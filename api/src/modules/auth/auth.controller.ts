@@ -14,6 +14,7 @@ import { GetUser } from '@/common/decorators/get-user.decorator.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { LoginDto } from './dto/login.dto.js';
 import { LogoutResponseDto } from './dto/logout-response.dto.js';
+import { AuthThrottler } from '@/common/decorators/custom-throttler.decorator.js';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -22,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('身份认证')
+@AuthThrottler()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

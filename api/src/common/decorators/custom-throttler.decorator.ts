@@ -23,3 +23,12 @@ export const RelaxedThrottler = () =>
       limit: 20,
     },
   });
+
+// 登录、注册等认证接口：防暴力破解
+export const AuthThrottler = () =>
+  Throttle({
+    default: {
+      ttl: 60000,
+      limit: 10,
+    },
+  });

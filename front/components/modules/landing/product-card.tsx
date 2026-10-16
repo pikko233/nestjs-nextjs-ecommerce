@@ -25,9 +25,9 @@ export const ProductCard = ({ product }: Props) => {
         className="aspect-square w-full object-cover"
         loading="lazy"
       />
-      <div className="flex flex-1 flex-col gap-0.5 px-4 py-2">
+      <div className="flex flex-1 flex-col gap-0.5 px-4 py-2 min-h-26">
         <span className="text-sm text-muted-foreground">
-          {product.category.name}
+          {product.category}
         </span>
         <h3 className="text-sm font-semibold break-all">{product.name}</h3>
         <p className="text-xs text-muted-foreground break-all line-clamp-2">

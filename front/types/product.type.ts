@@ -1,5 +1,3 @@
-import { Category } from "./category.type";
-
 export interface Product {
   id: string;
   name: string;
@@ -7,9 +5,10 @@ export interface Product {
   price: number;
   stock: number;
   sku: string;
-  imageUrl: string | null;
+  imageUrl: string;
   isActive: boolean;
-  category: Category;
+  category: string;
+  categoryId: string;
   createdAt: string;
   updatedAt: string;
 }

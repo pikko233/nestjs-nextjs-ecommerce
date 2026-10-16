@@ -8,10 +8,9 @@ import { authService } from "@/service/api/auth.service";
 import { LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export const Header = () => {
-  const { items, totalItems } = useCart();
+  const { totalItems } = useCart();
   const { isLoading, setIsLoading, error, user, isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -39,7 +38,7 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 w-screen h-16 shadow-sm px-6 z-50 bg-white/70 backdrop-blur-md">
+      <header className="sticky top-0 w-screen h-16 shadow-sm px-6 shrink-0 z-50 bg-white/70 backdrop-blur-md">
         <div className="w-full h-full flex items-center justify-between">
           <Link href="/" className="text-2xl font-black">
             STOREFRONT
