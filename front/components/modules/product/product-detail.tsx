@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/use-cart";
 import { Product } from "@/types/product.type";
 import { cn } from "cn";
-import { ShoppingCart } from "lucide-react";
+import { ImageOff, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
@@ -22,13 +22,19 @@ export const ProductDetail = ({ product }: { product: Product }) => {
 
   return (
     <div className="container mx-auto grid grid-cols-1 gap-8 md:grid-cols-5 md:gap-12">
-      <Image
-        src={product.imageUrl.trimEnd()}
-        alt={product.name}
-        width={600}
-        height={600}
-        className="aspect-square w-full rounded-lg object-cover md:col-span-3"
-      />
+      {product.imageUrl ? (
+        <Image
+          src={product.imageUrl.trimEnd()}
+          alt={product.name}
+          width={600}
+          height={600}
+          className="aspect-square w-full rounded-lg object-cover md:col-span-3"
+        />
+      ) : (
+        <div className="flex aspect-square w-full items-center justify-center rounded-lg bg-muted text-muted-foreground md:col-span-3">
+          <ImageOff className="size-12" />
+        </div>
+      )}
       <div className="flex flex-col gap-6 md:col-span-2 md:py-2">
         <div className="flex flex-col gap-3">
           <Badge variant="secondary">{product.category}</Badge>

@@ -62,7 +62,7 @@ export const ProductList = () => {
       ) : (
         <div className={GRID_CLASS}>
           {products.map((product) => (
-            <Link key={product.id} href={product.id}>
+            <Link key={product.id} href={`/${product.id}`}>
               <ProductCard product={product} />
             </Link>
           ))}

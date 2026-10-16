@@ -4,7 +4,6 @@ import {
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-  NumberFieldScrubArea,
 } from "@/components/reui/number-field";
 
 interface Props {
@@ -34,7 +33,6 @@ export function NumberBox({
         step={step}
         disabled={disabled}
       >
-        {/* <NumberFieldScrubArea label="Amount" /> */}
         <NumberFieldGroup>
           <NumberFieldDecrement />
           <NumberFieldInput />

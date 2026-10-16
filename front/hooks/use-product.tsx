@@ -1,5 +1,4 @@
 import { productService } from "@/service/api/product.service";
-import { apiClient } from "@/service/axios.config";
 import {
   Product,
   ProductQueryParams,

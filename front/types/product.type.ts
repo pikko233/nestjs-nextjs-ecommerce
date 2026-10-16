@@ -5,7 +5,7 @@ export interface Product {
   price: number;
   stock: number;
   sku: string;
-  imageUrl: string;
+  imageUrl: string | null;
   isActive: boolean;
   category: string;
   categoryId: string;
