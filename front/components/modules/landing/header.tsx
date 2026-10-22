@@ -1,17 +1,18 @@
 "use client";
 
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
-import { authService } from "@/service/api/auth.service";
 import { LayoutDashboard, LogIn, LogOut, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export const Header = () => {
   const { totalItems } = useCart();
-  const { isLoading, setIsLoading, error, user, isAuthenticated } = useAuth();
+  const { isLoading, user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
 
   const handleDashboardClick = () => {
@@ -23,13 +24,10 @@ export const Header = () => {
   };
 
   const handleLogout = async () => {
-    setIsLoading(true);
-
-    try {
-      await authService.logout();
-    } catch (error) {
-      console.error(error);
-    }
+    await logout();
+    toast.success("已退出登录");
+    // 当前页可能需要登录（如结算页），统一回到首页
+    router.replace("/");
   };
 
   const handleLogin = async () => {
@@ -74,10 +72,19 @@ export const Header = () => {
                 >
                   <LayoutDashboard className="size-4" />
                 </Button>
-                <Button onClick={handleLogout}>
-                  <LogOut className="size-4 hidden sm:block" />
-                  退出登录
-                </Button>
+                <ConfirmDialog
+                  trigger={
+                    <Button disabled={isLoading}>
+                      <LogOut className="size-4 hidden sm:block" />
+                      退出登录
+                    </Button>
+                  }
+                  title="确定退出登录吗？"
+                  description="退出后需要重新登录才能下单和查看订单。"
+                  confirmText="退出登录"
+                  confirmVariant="destructive"
+                  onConfirm={handleLogout}
+                />
               </>
             ) : (
               <Button onClick={handleLogin}>

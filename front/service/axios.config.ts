@@ -50,12 +50,15 @@ apiClient.interceptors.response.use(
   },
   async function (error) {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest?.url === "/auth/refresh";
+    // 刷新与登录接口的 401 是凭证本身无效，不应触发刷新重试
+    const isAuthRequest = ["/auth/refresh", "/auth/login"].includes(
+      originalRequest?.url,
+    );
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !isRefreshRequest
+      !isAuthRequest
     ) {
       originalRequest._retry = true;
       const { refreshToken, reset } = useAuthStore.getState();
