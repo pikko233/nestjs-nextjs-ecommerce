@@ -43,12 +43,16 @@ export const LoginForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-xl">欢迎回来</CardTitle>
-        <CardDescription>输入邮箱和密码登录你的账号</CardDescription>
+    <Card className="w-full max-w-sm rounded-2xl py-8 shadow-(--auth-card-shadow) ring-foreground/5">
+      <CardHeader className="gap-3 px-8 text-center">
+        <CardTitle className="text-3xl font-bold tracking-tight">
+          欢迎回来
+        </CardTitle>
+        <CardDescription className="text-base">
+          输入邮箱和密码登录你的账号
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-8">
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             {error && (
@@ -74,6 +78,7 @@ export const LoginForm = () => {
               <Input
                 id="password"
                 type="password"
+                placeholder="请输入你的密码"
                 autoComplete="current-password"
                 required
                 value={password}

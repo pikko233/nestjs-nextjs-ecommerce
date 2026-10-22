@@ -128,3 +128,34 @@
     @apply font-sans;
   }
 }
+/* 登录/注册页（app/auth）局部主题：橙色主按钮、深色描边输入框、带偏移阴影的卡片 */
+.auth-theme {
+  --background: oklch(0.97 0 0);
+  --primary: oklch(0.66 0.17 46);
+  --primary-foreground: oklch(0.145 0 0);
+  --input: oklch(0.145 0 0 / 70%);
+  --ring: oklch(0.66 0.17 46);
+  --radius: 0.75rem;
+  --auth-card-shadow: 0 8px 12px -2px oklch(0 0 0 / 45%);
+
+  background-color: var(--background);
+}
+
+.dark .auth-theme {
+  --background: oklch(0.145 0 0);
+  --primary: oklch(0.7 0.16 48);
+  --primary-foreground: oklch(0.145 0 0);
+  --input: oklch(1 0 0 / 30%);
+  --ring: oklch(0.7 0.16 48);
+  /* 深色背景上黑色阴影看不出来，改用主色的偏移投影 */
+  --auth-card-shadow: 0 6px 0 0 oklch(0.7 0.16 48 / 35%);
+}
+
+/* 输入框与提交按钮在两个表单中重复出现，统一在这里加高 */
+.auth-theme [data-slot="input"] {
+  @apply h-11 px-3.5;
+}
+
+.auth-theme form [data-slot="button"][type="submit"] {
+  @apply h-11 text-base font-semibold;
+}

@@ -79,12 +79,14 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-xl">注册</CardTitle>
-        <CardDescription>创建一个新账号</CardDescription>
+    <Card className="w-full max-w-sm rounded-2xl py-8 shadow-(--auth-card-shadow) ring-foreground/5">
+      <CardHeader className="gap-3 px-8 text-center">
+        <CardTitle className="text-3xl font-bold tracking-tight">
+          注册
+        </CardTitle>
+        <CardDescription className="text-base">创建一个新账号</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-8">
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             {error && (
