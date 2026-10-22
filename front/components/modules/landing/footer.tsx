@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const Footer = () => {
   return (
-    <footer className="w-screen bg-muted p-8">
+    <footer className="w-screen bg-muted p-8 border-t">
       <div className="container mx-auto grid md:grid-cols-4 gap-8">
         <div>
           <h3 className="text-xl font-bold">STOREFRONT</h3>

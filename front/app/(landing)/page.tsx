@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="min-h-[60vh] w-screen bg-muted/30">
+      <main className="min-h-[60vh] w-screen bg-muted/70">
         <ProductList />
       </main>
       <Footer />

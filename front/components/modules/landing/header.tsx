@@ -38,9 +38,9 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 w-screen h-16 shadow-sm px-6 shrink-0 z-50 bg-white/70 backdrop-blur-md">
-        <div className="w-full h-full flex items-center justify-between">
-          <Link href="/" className="text-2xl font-black">
+      <header className="sticky top-0 w-screen h-16 shadow-sm px-6 shrink-0 z-50 bg-background/80 backdrop-blur-md">
+        <div className="w-full h-full flex items-center justify-between gap-2">
+          <Link href="/" className="text-xl sm:text-2xl font-black">
             STOREFRONT
           </Link>
           <div className="flex items-center gap-4">
@@ -75,13 +75,13 @@ export const Header = () => {
                   <LayoutDashboard className="size-4" />
                 </Button>
                 <Button onClick={handleLogout}>
-                  <LogOut className="size-4" />
+                  <LogOut className="size-4 hidden sm:block" />
                   退出登录
                 </Button>
               </>
             ) : (
               <Button onClick={handleLogin}>
-                <LogIn className="size-4" />
+                <LogIn className="size-4 hidden sm:block" />
                 登录
               </Button>
             )}

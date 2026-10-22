@@ -2,12 +2,14 @@ import { NumberBox } from "@/components/common/number-box";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { Product } from "@/types/product.type";
 import { cn } from "cn";
 import { ImageOff, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const ProductDetail = ({ product }: { product: Product }) => {
   const [quantity, setQuantity] = useState(1);
@@ -16,8 +18,10 @@ export const ProductDetail = ({ product }: { product: Product }) => {
 
   const handleAddToCart = () => {
     setQuantity(1);
-    alert(`add ${quantity} ${product.name} to cart`);
     addProductToCart(product, quantity);
+    toast.success("已加入购物车", {
+      description: `${product.name} × ${quantity}`,
+    });
   };
 
   return (
@@ -93,6 +97,60 @@ export const ProductDetail = ({ product }: { product: Product }) => {
           <dt className="text-muted-foreground">分类</dt>
           <dd className="font-medium">{product.category}</dd>
         </dl>
+      </div>
+    </div>
+  );
+};
+
+// 页面背景本身是 bg-muted，与 Skeleton 默认色相同，这里加深一档以便看清
+const SKELETON_BAR = "bg-foreground/10";
+
+// 与 ProductDetail 保持相同的栅格和区块高度，避免加载完成时布局跳动
+export const ProductDetailSkeleton = () => {
+  return (
+    <div
+      aria-hidden
+      className="container mx-auto grid grid-cols-1 gap-8 md:grid-cols-5 md:gap-12"
+    >
+      <Skeleton
+        className={cn(SKELETON_BAR, "aspect-square w-full md:col-span-3")}
+      />
+      <div className="flex flex-col gap-6 md:col-span-2 md:py-2">
+        <div className="flex flex-col gap-3">
+          {/* 分类 Badge */}
+          <Skeleton className={cn(SKELETON_BAR, "h-5 w-14 rounded-4xl")} />
+          {/* 名称：text-3xl，行高 36px */}
+          <Skeleton className={cn(SKELETON_BAR, "my-1 h-7 w-3/4")} />
+          {/* 价格与库存 */}
+          <div className="flex items-center gap-3">
+            <Skeleton className={cn(SKELETON_BAR, "my-1 h-7 w-32")} />
+            <Skeleton className={cn(SKELETON_BAR, "h-4 w-16")} />
+          </div>
+        </div>
+
+        {/* 描述 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className={cn(SKELETON_BAR, "h-3.5 w-full")} />
+          <Skeleton className={cn(SKELETON_BAR, "h-3.5 w-full")} />
+          <Skeleton className={cn(SKELETON_BAR, "h-3.5 w-2/3")} />
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <Skeleton className={cn(SKELETON_BAR, "h-4 w-8")} />
+            <Skeleton className={cn(SKELETON_BAR, "h-9 w-28")} />
+          </div>
+          <Skeleton className={cn(SKELETON_BAR, "h-10 w-full")} />
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <Skeleton className={cn(SKELETON_BAR, "my-0.5 h-4 w-40")} />
+          <Skeleton className={cn(SKELETON_BAR, "my-0.5 h-4 w-32")} />
+        </div>
       </div>
     </div>
   );
