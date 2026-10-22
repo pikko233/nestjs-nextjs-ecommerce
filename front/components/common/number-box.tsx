@@ -24,7 +24,8 @@ export function NumberBox({
   disabled = false,
 }: Props) {
   return (
-    <div className="w-full max-w-48">
+    // min-w-32：在横向 flex 中被压缩时，保证输入框仍能完整显示 3 位数字
+    <div className="w-full max-w-32 min-w-28">
       <NumberField
         value={value}
         onValueChange={(next) => onChange(next ?? min)}

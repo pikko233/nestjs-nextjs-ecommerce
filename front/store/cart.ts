@@ -11,6 +11,9 @@ const initialState: Cart = {
 
 type CartStateType = typeof initialState & {
   addProductToCart: (product: Product, quantity?: number) => void;
+  changeCartItemQuantity: (id: string, value: number) => void;
+  removeCartItem: (id: string) => void;
+  clearCart: () => void;
 };
 
 const calcTotals = (items: CartItem[]) => ({
@@ -43,6 +46,23 @@ export const useCartStore = create<CartStateType>()(
               ];
           return { items, ...calcTotals(items) };
         }),
+      changeCartItemQuantity: (id, value) =>
+        set((state) => {
+          // 数量小于 1 时移除该商品
+          const items =
+            value < 1
+              ? state.items.filter((i) => i.id !== id)
+              : state.items.map((i) =>
+                  i.id === id ? { ...i, quantity: value } : i,
+                );
+          return { items, ...calcTotals(items) };
+        }),
+      removeCartItem: (id) =>
+        set((state) => {
+          const items = state.items.filter((i) => i.id !== id);
+          return { items, ...calcTotals(items) };
+        }),
+      clearCart: () => set(initialState),
     }),
     { name: "cart-store" },
   ),

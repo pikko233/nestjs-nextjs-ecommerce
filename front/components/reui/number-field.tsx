@@ -32,7 +32,7 @@ const numberFieldGroupVariants = cva(
 )
 
 const numberFieldButtonVariants = cva(
-  "relative flex shrink-0 cursor-pointer items-center justify-center transition-colors pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:bg-accent",
+  "relative flex shrink-0 cursor-pointer items-center justify-center transition-colors pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:bg-accent data-disabled:cursor-not-allowed data-disabled:text-muted-foreground/50 data-disabled:hover:bg-transparent",
   {
     variants: {
       // Ladders restored from the pre-rename source. Rhea was added after they
