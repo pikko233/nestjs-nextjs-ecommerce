@@ -36,3 +36,19 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface OrderQueryParams {
+  page?: number;
+  limit?: number;
+  status?: OrderStatus;
+  // 按订单号模糊搜索
+  search?: string;
+}
+
+// 订单列表接口没有经过 ApiResponse 包装，直接返回分页数据
+export interface OrderListResponse {
+  data: Order[];
+  total: number;
+  page: number;
+  limit: number;
+}

@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeftIcon, CircleCheckIcon, CircleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -39,8 +39,15 @@ export const CheckoutClient = () => {
   const creatingRef = useRef(false);
 
   const router = useRouter();
+  // 从订单页「去支付」进入时携带 orderId，直接支付该订单，不再从购物车下单
+  const payingOrderId = useSearchParams().get("orderId");
 
-  const { createOrder, error: orderError } = useOrder();
+  const {
+    createOrder,
+    getOrder,
+    isLoading: isLoadingOrder,
+    error: orderError,
+  } = useOrder();
 
   const { items, clearCart } = useCart();
 
@@ -59,15 +66,32 @@ export const CheckoutClient = () => {
   );
 
   useEffect(() => {
-    if (hasHydrated && items.length === 0 && !orderId) {
+    if (!payingOrderId && hasHydrated && items.length === 0 && !orderId) {
       router.push("/cart");
     }
-  }, [hasHydrated, items, orderId, router]);
+  }, [payingOrderId, hasHydrated, items, orderId, router]);
+
+  // 支付已有订单：以后端订单金额为准，且只有待支付订单可以支付
+  useEffect(() => {
+    if (!payingOrderId) return;
+
+    getOrder(payingOrderId).then((order) => {
+      if (!order) return;
+      if (order.status !== "PENDING") {
+        setStripeError("该订单当前状态不可支付");
+        return;
+      }
+      setOrderId(order.id);
+      setOrderTotal(order.total);
+    });
+  }, [payingOrderId, getOrder]);
 
   // 首次选择支付方式时创建订单和 PaymentIntent；
   // 若订单已创建但 PaymentIntent 失败，再次选择时只重试 PaymentIntent
   const createOrderAndPaymentIntent = async () => {
-    if (creatingRef.current || clientSecret) return;
+    // 已有订单还没加载完成时不能下单，否则会从购物车重复创建订单
+    if (creatingRef.current || clientSecret || (payingOrderId && !orderId))
+      return;
     creatingRef.current = true;
     setIsCreatingOrder(true);
     setStripeError(null);
@@ -128,7 +152,8 @@ export const CheckoutClient = () => {
     });
 
     if (confirmed?.status === "COMPLETED") {
-      clearCart();
+      // 支付已有订单与购物车无关，不清空购物车
+      if (!payingOrderId) clearCart();
       setCurrentStep(3);
     } else {
       setStripeError("已收到付款，但订单确认失败，请联系客服。");
@@ -172,12 +197,18 @@ export const CheckoutClient = () => {
               <PaymentMethods
                 selectedMethod={selectedMethod}
                 onSelect={handlePaymentMethodSelect}
-                disabled={isCreatingOrder}
+                disabled={isCreatingOrder || (!!payingOrderId && !orderId)}
               />
+              {isLoadingOrder && payingOrderId && !orderId && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Spinner />
+                  正在加载订单...
+                </div>
+              )}
               {isCreatingOrder && (
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Spinner />
-                  正在创建订单...
+                  {payingOrderId ? "正在发起支付..." : "正在创建订单..."}
                 </div>
               )}
               {clientSecret && (
