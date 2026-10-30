@@ -1,0 +1,117 @@
+name: CI/CD Nest.js to ECR then EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "api/**"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: v24.14.0
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./api
+
+      - name: Generate prisma client
+        run: npx prisma generate
+        working-directory: ./api
+
+      - name: Lint
+        run: npm run lint
+        working-directory: ./api
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./api
+
+      - name: Build
+        run: npm run build
+        working-directory: ./api
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      # Login to aws via OIDC instead of using AWS secrets access key that is dangerous
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Login to Amazon ECR
+      # ECR_REPOSITORY is the full repository URI; docker login only takes the registry host
+      - name: Login to Amazon ECR
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+          docker login --username AWS --password-stdin "${ECR_REPOSITORY%%/*}"
+
+      # Build Docker Image, tagged with both latest and the commit sha (for rollback)
+      - name: Build Docker Image
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: |
+          docker build --no-cache \
+            -t "$ECR_REPOSITORY:latest" \
+            -t "$ECR_REPOSITORY:${{ github.sha }}" \
+            ./api
+
+      # Push both tags to ECR
+      - name: Push Docker Image to ECR
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: docker push --all-tags "$ECR_REPOSITORY"
+
+      # Deploy to EC2: the instance role grants ECR pull and Secrets Manager read
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            IMAGE="${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
+
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+              docker login --username AWS --password-stdin "${IMAGE%%/*}"
+            docker pull "$IMAGE"
+
+            # Write every key of the secret to a temp env file (mktemp is 0600)
+            ENV_FILE=$(mktemp)
+            trap 'rm -f "$ENV_FILE"' EXIT
+            aws secretsmanager get-secret-value \
+              --secret-id nestjs-prod-secrets \
+              --query SecretString \
+              --output text | jq -r 'to_entries[] | "\(.key)=\(.value)"' > "$ENV_FILE"
+
+            docker stop nestjs-nextjs-ecommerce || true
+            docker rm nestjs-nextjs-ecommerce || true
+
+            docker run -d \
+              --name nestjs-nextjs-ecommerce \
+              --restart unless-stopped \
+              -p 80:3000 \
+              --env-file "$ENV_FILE" \
+              "$IMAGE"
+
+            docker image prune -f
