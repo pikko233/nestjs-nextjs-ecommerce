@@ -107,10 +107,12 @@ jobs:
             docker stop nestjs-nextjs-ecommerce || true
             docker rm nestjs-nextjs-ecommerce || true
 
+            # Not published to the host: Caddy (same network) terminates TLS on 80/443
+            docker network inspect web >/dev/null 2>&1 || docker network create web
             docker run -d \
               --name nestjs-nextjs-ecommerce \
               --restart unless-stopped \
-              -p 80:3000 \
+              --network web \
               --env-file "$ENV_FILE" \
               "$IMAGE"
 

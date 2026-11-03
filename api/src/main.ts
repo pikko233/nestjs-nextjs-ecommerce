@@ -61,7 +61,7 @@ async function bootstrap() {
       },
       'JWT-refresh',
     )
-    .addServer('http://localhost:3000', 'dev server')
+    .addServer(`http://localhost:${process.env.PORT}`, 'dev server')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory, {
