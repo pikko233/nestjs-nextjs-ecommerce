@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "api/**"
+      - ".github/workflows/api.yml"
 
 jobs:
   ci:
@@ -109,10 +110,15 @@ jobs:
 
             # Not published to the host: Caddy (same network) terminates TLS on 80/443
             docker network inspect web >/dev/null 2>&1 || docker network create web
+            # Ship container stdout/stderr to CloudWatch Logs, one stream per deployed commit
             docker run -d \
               --name nestjs-nextjs-ecommerce \
               --restart unless-stopped \
               --network web \
+              --log-driver=awslogs \
+              --log-opt awslogs-region=${{ secrets.AWS_REGION }} \
+              --log-opt awslogs-group=nestjs-nextjs-ecommerce \
+              --log-opt awslogs-stream=${{ github.sha }} \
               --env-file "$ENV_FILE" \
               "$IMAGE"
 
